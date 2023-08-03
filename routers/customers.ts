@@ -1,9 +1,11 @@
 import { Router } from "express";
+import razorpay from "../services/razorpay";
 
 const router = Router();
 
-router.get("/", (req, res) => {
-  res.send("list of customers");
+router.get("/", async (req, res) => {
+  const customers = await razorpay.customers.all();
+  res.send(customers);
 });
 
 export default router;

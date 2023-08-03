@@ -4,10 +4,15 @@ import customerRouter from "./routers/customers";
 
 const app = express();
 
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/api/customers", customerRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-app.listen(8000, () => console.log("Server started"));
+const port = process.env.PORT || 8000;
+
+app.listen(port, () => console.log("Server started"));
