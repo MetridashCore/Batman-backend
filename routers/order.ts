@@ -8,4 +8,19 @@ router.get("/", async (req, res) => {
   res.send(orders);
 });
 
+router.post("/", async (req, res) => {
+  const { amount, partial_payment } = req.body;
+  try {
+    await razorpay.orders.create({
+      amount,
+      currency: "INR",
+      partial_payment: false,
+      receipt: "system order reference id",
+    });
+    return res.send("order created");
+  } catch (ex) {
+    return res.send("Error");
+  }
+});
+
 export default router;
