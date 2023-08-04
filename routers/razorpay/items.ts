@@ -15,23 +15,31 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const { name, description, amount } = req.body;
-  const item = await razorpay.items.create({
-    name,
-    description,
-    amount,
-    currency: "INR",
-  });
-  return res.send(item);
+  try {
+    const item = await razorpay.items.create({
+      name,
+      description,
+      amount,
+      currency: "INR",
+    });
+    return res.send(item);
+  } catch (ex) {
+    return res.send("Error");
+  }
 });
 
 router.put("/:id", async (req, res) => {
   const { name, description, amount } = req.body;
-  const item = await razorpay.items.edit(req.params.id, {
-    name,
-    description,
-    amount,
-  });
-  return res.send(item);
+  try {
+    const item = await razorpay.items.edit(req.params.id, {
+      name,
+      description,
+      amount,
+    });
+    return res.send(item);
+  } catch (ex) {
+    return res.send("Error");
+  }
 });
 
 router.delete("/:id", async (req, res) => {
