@@ -4,6 +4,7 @@ import helmet from "helmet";
 import customerRouter from "./routers/razorpay/customers";
 import OrderRouter from "./routers/razorpay/order";
 import accountRouter from "./routers/razorpay/account";
+import invoiceRouter from "./routers/razorpay/invoice";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/razorpay/customers", customerRouter);
 app.use("/api/razorpay/orders", OrderRouter);
 app.use("/api/razorpay/account", accountRouter);
+app.use("/api/razorpay/invoice", invoiceRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
