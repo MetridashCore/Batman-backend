@@ -3,6 +3,11 @@ import razorpay from "../../services/razorpay";
 
 const router = Router();
 
+router.get("/:id", async (req, res) => {
+  const account = await razorpay.accounts.fetch(req.params.id);
+  return res.send(account);
+});
+
 router.post("/", async (req, res) => {
   const {
     email,
@@ -25,7 +30,7 @@ router.post("/", async (req, res) => {
     gst,
   } = req.body;
   try {
-    razorpay.accounts.create({
+    const account = await razorpay.accounts.create({
       email,
       phone,
       legal_business_name,
@@ -53,7 +58,7 @@ router.post("/", async (req, res) => {
         gst,
       },
     });
-    return res.send("Account created");
+    return res.send(account);
   } catch (ex) {
     return res.send("Error");
   }
