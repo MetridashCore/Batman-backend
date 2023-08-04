@@ -1,5 +1,5 @@
 import { Router } from "express";
-import razorpay from "../services/razorpay";
+import razorpay from "../../services/razorpay";
 
 const router = Router();
 
