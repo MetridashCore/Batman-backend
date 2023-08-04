@@ -34,4 +34,9 @@ router.get("/:paymentId", async (req, res) => {
   return res.send(cardDetails);
 });
 
+router.post("/:paymentId", async (req, res) => {
+  const otp = razorpay.payments.otpGenerate(req.params.paymentId);
+  return res.send(otp);
+});
+
 export default router;
