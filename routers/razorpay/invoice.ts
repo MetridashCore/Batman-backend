@@ -3,6 +3,11 @@ import razorpay from "../../services/razorpay";
 
 const router = Router();
 
+router.get("/", async (req, res) => {
+  const invoices = await razorpay.invoices.all();
+  return res.send(invoices);
+});
+
 router.post("/", async (req, res) => {
   const {
     name,
