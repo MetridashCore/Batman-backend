@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import customerRouter from "./routers/customers";
+import OrderRouter from "./routers/order";
 
 const app = express();
 
@@ -8,6 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/customers", customerRouter);
+app.use("/api/orders", OrderRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
