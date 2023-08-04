@@ -27,4 +27,11 @@ router.get("/:orderId", async (req, res) => {
   return res.send(payment);
 });
 
+router.get("/:paymentId", async (req, res) => {
+  const cardDetails = await razorpay.payments.fetchCardDetails(
+    req.params.paymentId
+  );
+  return res.send(cardDetails);
+});
+
 export default router;
