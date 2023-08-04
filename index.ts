@@ -11,9 +11,9 @@ const app = express();
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/razorpay/api/customers", customerRouter);
-app.use("/razorpay/api/orders", OrderRouter);
-app.use("/razorpay/api/account", accountRouter);
+app.use("/api/razorpay/customers", customerRouter);
+app.use("/api/razorpay/orders", OrderRouter);
+app.use("/api/razorpay/account", accountRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
