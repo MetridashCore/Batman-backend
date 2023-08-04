@@ -5,6 +5,7 @@ import customerRouter from "./routers/razorpay/customers";
 import OrderRouter from "./routers/razorpay/order";
 import accountRouter from "./routers/razorpay/account";
 import invoiceRouter from "./routers/razorpay/invoice";
+import itemsRouter from "./routers/razorpay/items";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use("/api/razorpay/customers", customerRouter);
 app.use("/api/razorpay/orders", OrderRouter);
 app.use("/api/razorpay/account", accountRouter);
 app.use("/api/razorpay/invoice", invoiceRouter);
+app.use("/api/razorpay/items", itemsRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
