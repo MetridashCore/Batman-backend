@@ -24,4 +24,14 @@ router.post("/", async (req, res) => {
   return res.send(item);
 });
 
+router.put("/:id", async (req, res) => {
+  const { name, description, amount } = req.body;
+  const item = await razorpay.items.edit(req.params.id, {
+    name,
+    description,
+    amount,
+  });
+  return res.send(item);
+});
+
 export default router;
