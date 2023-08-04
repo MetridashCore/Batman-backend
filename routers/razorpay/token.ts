@@ -26,4 +26,9 @@ router.get("/:id", async (req, res) => {
   return res.send(token);
 });
 
+router.delete("/:id", async (req, res) => {
+  await razorpay.tokens.delete({ id: req.params.id });
+  return res.send(true);
+});
+
 export default router;
