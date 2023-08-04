@@ -22,4 +22,9 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/:customerId", async (req, res) => {
+  const customer = await razorpay.customers.fetch(req.params.customerId);
+  return res.send(customer);
+});
+
 export default router;
