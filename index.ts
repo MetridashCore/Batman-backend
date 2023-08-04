@@ -12,6 +12,10 @@ import paymentRouter from "./routers/razorpay/payment";
 
 const app = express();
 
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  throw new Error("FATAL ERROR!");
+}
+
 // Middleware
 app.use(helmet());
 app.use(express.json());
