@@ -34,4 +34,9 @@ router.put("/:id", async (req, res) => {
   return res.send(item);
 });
 
+router.delete("/:id", async (req, res) => {
+  await razorpay.items.delete(req.params.id);
+  return res.send(true);
+});
+
 export default router;
