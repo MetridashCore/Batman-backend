@@ -35,8 +35,23 @@ router.get("/:paymentId", async (req, res) => {
 });
 
 router.post("/:paymentId", async (req, res) => {
-  const otp = razorpay.payments.otpGenerate(req.params.paymentId);
-  return res.send(otp);
+  try {
+    const otp = razorpay.payments.otpGenerate(req.params.paymentId);
+    return res.send(otp);
+  } catch (ex) {
+    return res.send("Error");
+  }
+});
+
+router.post("/:paymentId", async (req, res) => {
+  try {
+    const otp = await razorpay.payments.otpSubmit(req.params.paymentId, {
+      otp: req.body.otp,
+    });
+    return res.send(otp);
+  } catch (ex) {
+    return res.send("Error");
+  }
 });
 
 export default router;
