@@ -9,7 +9,7 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const { amount, partial_payment } = req.body;
+  const { amount } = req.body;
   try {
     await razorpay.orders.create({
       amount,
@@ -21,6 +21,11 @@ router.post("/", async (req, res) => {
   } catch (ex) {
     return res.send("Error");
   }
+});
+
+router.get("/:id", async (req, res) => {
+  const order = await razorpay.orders.fetch(req.params.id);
+  return res.send(order);
 });
 
 export default router;
