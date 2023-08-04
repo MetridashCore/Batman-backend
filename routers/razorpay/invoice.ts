@@ -8,6 +8,11 @@ router.get("/", async (req, res) => {
   return res.send(invoices);
 });
 
+router.get("/:id", async (req, res) => {
+  const invoice = await razorpay.invoices.fetch(req.params.id);
+  return res.send(invoice);
+});
+
 router.post("/", async (req, res) => {
   const {
     name,
