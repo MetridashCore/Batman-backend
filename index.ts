@@ -6,6 +6,7 @@ import OrderRouter from "./routers/razorpay/order";
 import accountRouter from "./routers/razorpay/account";
 import invoiceRouter from "./routers/razorpay/invoice";
 import itemsRouter from "./routers/razorpay/items";
+import tokenRouter from "./routers/razorpay/token";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use("/api/razorpay/orders", OrderRouter);
 app.use("/api/razorpay/account", accountRouter);
 app.use("/api/razorpay/invoice", invoiceRouter);
 app.use("/api/razorpay/items", itemsRouter);
+app.use("/api/razorpay/token", tokenRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
