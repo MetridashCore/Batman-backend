@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import helmet from "helmet";
+import compression from "compression";
 import customerRouter from "./routers/razorpay/customers";
 import OrderRouter from "./routers/razorpay/order";
 import accountRouter from "./routers/razorpay/account";
@@ -9,15 +10,15 @@ import itemsRouter from "./routers/razorpay/items";
 import tokenRouter from "./routers/razorpay/token";
 import fundRouter from "./routers/razorpay/fund";
 import paymentRouter from "./routers/razorpay/payment";
+import config from "./startup/config";
+
+config();
 
 const app = express();
 
-if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  throw new Error("FATAL ERROR!");
-}
-
 // Middleware
 app.use(helmet());
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/razorpay/customers", customerRouter);
