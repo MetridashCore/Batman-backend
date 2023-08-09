@@ -8,7 +8,7 @@ const schema = z.object({
   amount: z
     .number({
       invalid_type_error: "Only Number is allowed",
-      required_error: "The amount must be atleast INR 1.00",
+      required_error: "The amount must be at least INR 1.00",
     })
     .min(1, { message: "Amount must be less than or equal to 1.00 INR" }),
 });
