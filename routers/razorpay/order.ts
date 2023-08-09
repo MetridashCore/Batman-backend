@@ -1,31 +1,51 @@
 import { Router } from "express";
+import { z } from "zod";
 import razorpay from "../../services/razorpay";
 
 const router = Router();
 
+const schema = z.object({
+  amount: z
+    .number({
+      invalid_type_error: "Only Number is allowed",
+      required_error: "The amount must be atleast INR 1.00",
+    })
+    .min(1, { message: "Amount must be less than or equal to 1.00 INR" }),
+});
+
 router.get("/", async (req, res) => {
-  const orders = await razorpay.orders.all();
-  res.send(orders);
+  try {
+    const orders = await razorpay.orders.all();
+    return res.send(orders);
+  } catch (error) {
+    return res.send(error);
+  }
 });
 
 router.post("/", async (req, res) => {
-  const { amount } = req.body;
   try {
-    await razorpay.orders.create({
-      amount,
+    const { amount } = schema.parse(req.body);
+    const order = await razorpay.orders.create({
+      amount: amount * 100,
       currency: "INR",
       partial_payment: false,
-      receipt: "system order reference id",
     });
-    return res.send("order created");
-  } catch (ex) {
-    return res.send("Error");
+    return res.send(order);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.send(error.issues[0].message);
+    }
+    return res.send(error);
   }
 });
 
 router.get("/:id", async (req, res) => {
-  const order = await razorpay.orders.fetch(req.params.id);
-  return res.send(order);
+  try {
+    const order = await razorpay.orders.fetch(req.params.id);
+    return res.send(order);
+  } catch (error) {
+    return res.send(error);
+  }
 });
 
 export default router;
