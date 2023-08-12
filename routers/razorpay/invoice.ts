@@ -11,6 +11,7 @@ const schema = z.object({
   billing_address_line1: z
     .string()
     .min(1, { message: "Billing address is required" }),
+  billing_address_line2: z.string(),
   billing_address_zipcode: z
     .string()
     .min(1, { message: "Zipcode is required" }),
@@ -22,6 +23,7 @@ const schema = z.object({
   shipping_address_line1: z
     .string()
     .min(1, { message: "Shipping address is required" }),
+  shipping_address_line2: z.string(),
   shipping_address_zipcode: z
     .string()
     .min(1, { message: "Zipcode is required" }),
@@ -83,7 +85,7 @@ router.post("/", async (req, res) => {
     amount,
     line_items_name,
     line_items_description,
-  } = req.body;
+  } = schema.parse(req.body);
   try {
     const invoice = await razorpay.invoices.create({
       type: "invoice",
