@@ -4,17 +4,25 @@ import razorpay from "../../services/razorpay";
 const router = Router();
 
 router.get("/", async (req, res) => {
-  const payments = await razorpay.payments.all();
-  return res.send(payments);
+  try {
+    const payments = await razorpay.payments.all();
+    return res.send(payments);
+  } catch (error) {
+    return res.send(error);
+  }
 });
 
 router.get("/:paymentId", async (req, res) => {
-  const payment = await razorpay.payments.capture(
-    req.params.paymentId,
-    req.body.amount,
-    "INR"
-  );
-  return res.send(payment);
+  try {
+    const payment = await razorpay.payments.capture(
+      req.params.paymentId,
+      req.body.amount,
+      "INR"
+    );
+    return res.send(payment);
+  } catch (error) {
+    return res.send(error);
+  }
 });
 
 router.get("/:paymentId", async (req, res) => {
