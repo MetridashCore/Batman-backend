@@ -22,4 +22,19 @@ describe("/api/razorpay/customers", () => {
       expect(customer).toHaveProperty("contact");
     });
   });
+  describe("POST /", () => {
+    it("should create single customer", async () => {
+      try {
+        const newCustomerData = {
+          name: "New Customer",
+          email: "new@example.com",
+          contact: +9184938274,
+        };
+        const customer = await razorpay.customers.create(newCustomerData);
+        expect(customer).toBeTruthy();
+      } catch (error: any) {
+        expect(error.statusCode).toBe(400);
+      }
+    });
+  });
 });
