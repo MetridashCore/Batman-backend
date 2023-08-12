@@ -1,16 +1,65 @@
 import { Router } from "express";
+import { z } from "zod";
 import razorpay from "../../services/razorpay";
 
 const router = Router();
 
+const schema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  contact: z.string().min(1, { message: "Contact is required" }),
+  email: z.string().email(),
+  billing_address_line1: z
+    .string()
+    .min(1, { message: "Billing address is required" }),
+  billing_address_zipcode: z
+    .string()
+    .min(1, { message: "Zipcode is required" }),
+  billing_address_city: z.string().min(1, { message: "City is required" }),
+  billing_address_state: z.string().min(1, { message: "State is required" }),
+  billing_address_country: z
+    .string()
+    .min(1, { message: "Country is required" }),
+  shipping_address_line1: z
+    .string()
+    .min(1, { message: "Shipping address is required" }),
+  shipping_address_zipcode: z
+    .string()
+    .min(1, { message: "Zipcode is required" }),
+  shipping_address_city: z.string().min(1, { message: "State is required" }),
+  shipping_address_state: z.string().min(1, { message: "State is required" }),
+  shipping_address_country: z
+    .string()
+    .min(1, { message: "Country is required" }),
+  line_items_name: z.string().min(1, { message: "Name is required" }),
+  line_items_description: z
+    .string()
+    .min(1, { message: "Description is required" }),
+  amount: z.number({
+    required_error: "Amount is required",
+    invalid_type_error: "Only Number is allowed",
+  }),
+  quantity: z.number({
+    required_error: "Quantity is required",
+    invalid_type_error: "Only Number is allowed",
+  }),
+});
+
 router.get("/", async (req, res) => {
-  const invoices = await razorpay.invoices.all();
-  return res.send(invoices);
+  try {
+    const invoices = await razorpay.invoices.all();
+    return res.send(invoices);
+  } catch (error) {
+    return res.send(error);
+  }
 });
 
 router.get("/:id", async (req, res) => {
-  const invoice = await razorpay.invoices.fetch(req.params.id);
-  return res.send(invoice);
+  try {
+    const invoice = await razorpay.invoices.fetch(req.params.id);
+    return res.send(invoice);
+  } catch (error) {
+    return res.send(error);
+  }
 });
 
 router.post("/", async (req, res) => {
@@ -71,8 +120,11 @@ router.post("/", async (req, res) => {
       ],
     });
     return res.send(invoice);
-  } catch (ex) {
-    return res.send("Error");
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.send(error.issues[0].message);
+    }
+    return res.send(error);
   }
 });
 
