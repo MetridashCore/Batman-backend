@@ -13,5 +13,13 @@ describe("/api/razorpay/order", () => {
         }
       }
     });
+    it("should return single order", async () => {
+      const order = await razorpay.orders.fetch("order_MO02vp2aJAnNKe");
+      expect(order).toBeTruthy();
+      expect(order).toHaveProperty("id");
+      expect(order).toHaveProperty("amount");
+      expect(order).toHaveProperty("currency");
+      expect(order).toHaveProperty("entity");
+    });
   });
 });
