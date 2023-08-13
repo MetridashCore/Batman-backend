@@ -1,6 +1,8 @@
-FROM docker.io/library/node:lts-alpine
+FROM docker.io/library/node:lts-alpine AS base
 
 WORKDIR /app
+
+FROM base AS builder
 
 RUN corepack enable
 
@@ -16,6 +18,18 @@ RUN npm i
 
 COPY . ./
 
-EXPOSE 8000 
+#Build
 
-CMD ["npm","run","dev"]
+RUN npm run build
+
+FROM base AS runner 
+
+ENV NODE_ENV=production
+
+COPY --from=builder /app ./output
+
+EXPOSE 8000/tcp
+
+VOLUME ["/data"]
+
+CMD ["node", "output/dist/index.js"]
