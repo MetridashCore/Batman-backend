@@ -3,10 +3,12 @@ import express from "express";
 import prod from "./startup/prod";
 import config from "./startup/config";
 import routes from "./startup/routes";
+import logger from "./startup/logger";
 
 const app = express();
 
 config();
+logger(app);
 prod(app);
 routes(app);
 
