@@ -8,6 +8,7 @@ import itemsRouter from "../routers/razorpay/items";
 import tokenRouter from "../routers/razorpay/token";
 import fundRouter from "../routers/razorpay/fund";
 import paymentRouter from "../routers/razorpay/payment";
+import stripePayment from '../routers/stripe/payment';
 import error from "./error";
 
 export default function (app: Express) {
@@ -21,6 +22,7 @@ export default function (app: Express) {
   app.use("/api/razorpay/token", tokenRouter);
   app.use("/api/razorpay/fund", fundRouter);
   app.use("/api/razorpay/payment", paymentRouter);
-
+  app.use('/stripe-payment', stripePayment);
+ 
   error(app);
 }
