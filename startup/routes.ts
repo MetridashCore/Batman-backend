@@ -10,6 +10,7 @@ import express from "express";
 // import paymentRouter from "../routers/razorpay/payment";
 import stripePayment from '../routers/stripe/payment';
 import error from "./error";
+import middleware from "../middleware";
 
 export default function (app: Express) {
   app.use(express.json());
@@ -23,6 +24,7 @@ export default function (app: Express) {
   // app.use("/api/razorpay/fund", fundRouter);
   // app.use("/api/razorpay/payment", paymentRouter);
   app.use('/stripe-payment', stripePayment);
+  app.use(middleware.decodeToken);
  
   error(app);
 }

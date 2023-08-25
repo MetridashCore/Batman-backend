@@ -3,6 +3,14 @@ import stripe from "../../services/stripe";
 import { generateApiKey } from "generate-api-key";
 import admin from "./../../firebase";
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { uid: string };
+    }
+  }
+}
+
 const DOMAIN = 'http://localhost:1337'
 
 const router = Router();
@@ -82,11 +90,10 @@ router.get('/delete', async (req: Request, res: Response) => {
       stripe.subscriptions.del(subscriptionId);
 
       const data = {
-        status: null // subscription or 8
+        status: null
       };
       const response = await admin.firestore().collection('api_keys').doc(api_key as string).set(data, { merge: true });
     } catch (err) {
-      // console.log(err.msg);
       return res.sendStatus(500);
     }
     res.sendStatus(200);
@@ -95,6 +102,7 @@ router.get('/delete', async (req: Request, res: Response) => {
 
 router.post('/create-checkout-session/:product', async (req: Request, res: Response) => {
   const { product } = req.params;
+  const userId = req.user?.uid;
   let mode: string, price_ID: string, line_items: any[], quantity_type: any;
 
   if (product === 'pre1') {
@@ -154,7 +162,8 @@ router.post('/create-checkout-session/:product', async (req: Request, res: Respo
   const newAPIKey = generateApiKey();
   const customer = await stripe.customers.create({
     metadata: {
-      APIkey: newAPIKey
+      APIkey: newAPIKey,
+      userId: userId 
     }
   });
 
@@ -177,7 +186,8 @@ router.post('/create-checkout-session/:product', async (req: Request, res: Respo
     APIkey: newAPIKey,
     payment_type: product,
     stripeCustomerId,
-    status: quantity_type
+    status: quantity_type,
+    userId: userId 
   };
   const response = await admin.firestore().collection('api_keys').doc(newAPIKey as string).set(data, { merge: true });
 
