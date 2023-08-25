@@ -1,17 +1,19 @@
 import { Router, Request, Response } from "express";
 import stripe from "../../services/stripe";
 import { generateApiKey } from "generate-api-key";
-import db from "./../../firebase";
+import admin from "./../../firebase";
 
 const DOMAIN = 'http://localhost:1337'
 
 const router = Router();
 
+
+
 router.get('/api', async (req: Request, res: Response) => {
   const { api_key } = req.query;
   if (!api_key) { return res.sendStatus(403); }
   let paid_status: boolean = false;
-  const doc = await db.collection('api_keys').doc(api_key as string).get();
+  const doc = await admin.firestore().collection('api_keys').doc(api_key as string).get();
   if (!doc.exists) {
     res.status(403).send({ 'status': "API Key is invalid" });
   } else {
@@ -42,7 +44,7 @@ router.get('/api', async (req: Request, res: Response) => {
       const data = {
         status: status - 1
       };
-      const response = await db.collection('api_keys').doc(api_key as string).set(data, { merge: true });
+      const response = await admin.firestore().collection('api_keys').doc(api_key as string).set(data, { merge: true });
     }
   }
   if (paid_status) {
@@ -54,7 +56,7 @@ router.get('/api', async (req: Request, res: Response) => {
 
 router.get('/check_status', async (req: Request, res: Response) => {
   const { api_key } = req.query;
-  const doc = await db.collection('api_keys').doc(api_key as string).get();
+  const doc = await admin.firestore().collection('api_keys').doc(api_key as string).get();
   if (!doc.exists) {
     res.status(400).send({ 'status': "API Key does not exist" });
   } else {
@@ -65,7 +67,7 @@ router.get('/check_status', async (req: Request, res: Response) => {
 
 router.get('/delete', async (req: Request, res: Response) => {
   const { api_key } = req.query;
-  const doc = await db.collection('api_keys').doc(api_key as string).get();
+  const doc = await admin.firestore().collection('api_keys').doc(api_key as string).get();
   if (!doc.exists) {
     res.status(400).send({ 'status': "API Key does not exist" });
   } else {
@@ -82,7 +84,7 @@ router.get('/delete', async (req: Request, res: Response) => {
       const data = {
         status: null // subscription or 8
       };
-      const response = await db.collection('api_keys').doc(api_key as string).set(data, { merge: true });
+      const response = await admin.firestore().collection('api_keys').doc(api_key as string).set(data, { merge: true });
     } catch (err) {
       // console.log(err.msg);
       return res.sendStatus(500);
@@ -177,7 +179,7 @@ router.post('/create-checkout-session/:product', async (req: Request, res: Respo
     stripeCustomerId,
     status: quantity_type
   };
-  const response = await db.collection('api_keys').doc(newAPIKey as string).set(data, { merge: true });
+  const response = await admin.firestore().collection('api_keys').doc(newAPIKey as string).set(data, { merge: true });
 
   res.redirect(303, session.url);
 });

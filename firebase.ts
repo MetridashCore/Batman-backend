@@ -1,17 +1,9 @@
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import * as admin from 'firebase-admin';
+import serviceAccount from './creds.json';
 
-import serviceAccount from './creds.json'
-
-initializeApp({
-    credential: cert({
-        projectId: serviceAccount.project_id,
-        privateKey: serviceAccount.private_key,
-        clientEmail: serviceAccount.client_email
-    })
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
 });
 
-const db = getFirestore()
-
-export default db
+export default admin;
 
