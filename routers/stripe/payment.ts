@@ -2,138 +2,139 @@ import { Router, Request, Response } from "express";
 import stripe from "../../services/stripe";
 import admin from "./../../firebase";
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: { uid: string };
-    }
-  }
-}
-
-const DOMAIN = 'http://localhost:1337'
-
 const router = Router();
 
-router.get('/delete', async (req: Request, res: Response) => {
-  const userId = req.user?.uid;
-  const doc = await admin.firestore().collection('api_keys').doc().get();
-  
-  if (!doc.exists) {
-    res.status(400).send({ 'status': "API Key does not exist" });
-  } else {
-    const { stripeCustomerId, userIds } = doc.data() ?? {};
+const [planOne, planTwo, planThree, planFour, planFive] = [
+  'price_1NiyeaGo36tEddLKI8NHcixv',
+  'price_1NiywxGo36tEddLKhkEG01l5',
+  'price_1Nj0POGo36tEddLKCpLUAnPw',
+  'price_1Nj0SXGo36tEddLK0NCfEDyZ',
+  'price_1Nj0TSGo36tEddLK8sXPtgHV'
+];
 
-    if (!userIds.includes(userId)) {
-      res.status(403).send({ 'status': "Access denied" });
-    } else {
-      try {
-        const customer = await stripe.customers.retrieve(
-          stripeCustomerId,
-          { expand: ['subscriptions'] }
-        );
-        console.log(customer);
-        let subscriptionId = customer?.subscriptions?.data?.[0]?.id;
-        
-        if (subscriptionId && customer.subscriptions.data[0].status !== 'incomplete') {
-          await stripe.subscriptions.del(subscriptionId);
-        }
+const stripeSession = async(plan:string) => {
+  try {
+      const session = await stripe.checkout.sessions.create({
+          mode: "payment",
+          payment_method_types: ["card"],
+          line_items: [
+              {
+                  price: plan,
+                  quantity: 1
+              },
+          ],
+          success_url: "http://localhost:3000/success",
+          cancel_url: "http://localhost:3000/cancel"
+      });
+      return session;
+  }catch (e){
+    console.error((e as Error).message);
+      return e;
+  }
+};
 
-        const data = {
-          status: null
-        };
-        await admin.firestore().collection('api_keys').doc().set(data, { merge: true });
-        
-        res.status(200).send({ 'status': 'Subscription cancelled' });
-      } catch (err) {
-        return res.sendStatus(500);
-      }
+const calculateTokensBasedOnPlan = (plan:number) => {
+  switch (plan) {
+    case 19:
+      return 100;
+    case 79:
+      return 500;
+    case 149:
+      return 1000;
+    case 279:
+      return 2000;
+    case 599:
+      return 5000;
+    default:
+      return 0;
+  }
+};
+
+const giveTokensToUser = async (email:string, tokens:number) => {
+  try {
+    const userSnapshot = await admin.database().ref("users").orderByChild("email").equalTo(email).once("value");
+    const userUid = Object.keys(userSnapshot.val())[0];
+    const userTokens = userSnapshot.child(`${userUid}/tokens`).val();
+    const updatedTokens = userTokens + tokens;
+
+    await admin.database().ref("users").child(userUid).update({
+      tokens: updatedTokens,
+    });
+
+    console.log(`Tokens added to user ${email}. New token balance: ${updatedTokens}`);
+  } catch (error) {
+    console.error("Error giving tokens to user:", error);
+  }
+};
+
+router.post('/subscribe', async (req:Request, res:Response) => {
+  try {
+    const { plan, customerId } = req.body;
+    let planId: string | null = null;
+    if(plan == 19) planId = planOne;
+    else if(plan == 79) planId = planTwo;
+    else if(plan == 149) planId = planThree;
+    else if(plan == 279) planId = planFour;
+    else if(plan == 599) planId = planFive;
+
+    if (planId === null) {
+      throw new Error('Invalid plan');
     }
+
+    const session = await stripeSession(planId);
+
+    const user = await admin.auth().getUser(customerId);
+
+    await admin.database().ref("users").child(user.uid).update({
+      subscription: {
+        sessionId: session.id
+      }
+    });
+    console.log(session)
+    return res.json({session})
+
+  } catch (error) {
+    console.error((error as Error).message);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.post('/create-checkout-session/:product', async (req: Request, res: Response) => {
-  const { product } = req.params;
-  const userId = req.user?.uid;
-  let mode: string, price_ID: string, line_items: any[], quantity_type: any, token: string;
+router.post("/payment-success", async (req: Request, res: Response) => {
+  const { sessionId, firebaseId } = req.body;
 
-  if (product === 'pre1') {
-    price_ID = 'price_1NiyeaGo36tEddLKI8NHcixv';
-    mode = 'payment';
-    line_items = [
-      {
-        price: price_ID,
-        quantity: 1
+  try {
+    // Retrieve the session from Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.payment_status === 'paid') {
+      const subscriptionId = session.subscription;
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+      // Calculate the tokens based on the subscription plan
+      const planId = subscription.plan.id;
+      const tokensToAdd = calculateTokensBasedOnPlan(parseInt(planId)); // Parse planId to an integer
+
+      // Retrieve the user
+      const user = await admin.auth().getUser(firebaseId);
+
+      // Update the user's token balance
+      if (user.email) {
+        await giveTokensToUser(user.email, tokensToAdd);
       }
-    ];
-    quantity_type = 100;
-  } else if (product === 'pre2') {
-    price_ID = 'price_1NiywxGo36tEddLKhkEG01l5';
-    mode = 'payment';
-    line_items = [
-      {
-        price: price_ID,
-        quantity: 1
-      }
-    ];
-    quantity_type = 500;
-  } else if (product === 'pre3') {
-    price_ID = 'price_1Nj0POGo36tEddLKCpLUAnPw';
-    mode = 'payment';
-    line_items = [
-      {
-        price: price_ID,
-        quantity: 1
-      }
-    ];
-    quantity_type = 1000;
-  } else if (product === 'pre4') {
-    price_ID = 'price_1Nj0SXGo36tEddLK0NCfEDyZ';
-    mode = 'payment';
-    line_items = [
-      {
-        price: price_ID,
-        quantity: 1
-      }
-    ];
-    quantity_type = 2000;
-  } else if (product === 'pre5') {
-    price_ID = 'price_1Nj0TSGo36tEddLK8sXPtgHV';
-    mode = 'payment';
-    line_items = [
-      {
-        price: price_ID,
-        quantity: 1
-      }
-    ];
-    quantity_type = 5000;
-  } else {
-    return res.sendStatus(403);
+
+      // Update the user's subscription and token balance in the database
+      await admin.database().ref("users").child(user.uid).update({
+        tokens: tokensToAdd,
+      });
+
+      return res.json({ message: "Payment successful" });
+    } else {
+      return res.json({ message: "Payment failed" });
+    }
+  } catch (error) {
+    console.error('Error handling payment success:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
-
-  const customer = await stripe.customers.create();
-
-  const stripeCustomerId = customer.id;
-  const session = await stripe.checkout.sessions.create({
-    customer: stripeCustomerId,
-    line_items: line_items,
-    mode: mode,
-    success_url: `${DOMAIN}/success.html`,
-    cancel_url: `${DOMAIN}/cancel.html`,
-  });
-  console.log(session);
-
-  token = quantity_type.toString();
-
-  const data = {
-    payment_type: product,
-    stripeCustomerId,
-    status: quantity_type,
-    userId: userId,
-    token: token 
-  };
-  const response = await admin.firestore().collection('api_keys').doc().set(data, { merge: true });
-
-  res.redirect(303, session.url);
 });
 
 export default router;

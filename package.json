@@ -41,7 +41,7 @@
     "firebase-admin": "^11.10.1",
     "generate-api-key": "^1.0.2",
     "helmet": "^7.0.0",
-    "razorpay": "^2.9.1",
+    "razorpay": "^2.9.2",
     "stripe": "^13.2.0",
     "zod": "^3.21.4"
   }
