@@ -23,8 +23,8 @@ const stripeSession = async(plan:string) => {
                   quantity: 1
               },
           ],
-          success_url: "http://localhost:3000/success",
-          cancel_url: "http://localhost:3000/cancel"
+          success_url: "http://localhost:3000/stripe/success",
+          cancel_url: "http://localhost:3000/stripe/cancel",
       });
       return session;
   }catch (e){
@@ -35,35 +35,18 @@ const stripeSession = async(plan:string) => {
 
 const calculateTokensBasedOnPlan = (plan:number) => {
   switch (plan) {
-    case 19:
+    case 1900:
       return 100;
-    case 79:
+    case 7900:
       return 500;
-    case 149:
+    case 14900:
       return 1000;
-    case 279:
+    case 27900:
       return 2000;
-    case 599:
+    case 59900:
       return 5000;
     default:
       return 0;
-  }
-};
-
-const giveTokensToUser = async (email:string, tokens:number) => {
-  try {
-    const userSnapshot = await admin.database().ref("users").orderByChild("email").equalTo(email).once("value");
-    const userUid = Object.keys(userSnapshot.val())[0];
-    const userTokens = userSnapshot.child(`${userUid}/tokens`).val();
-    const updatedTokens = userTokens + tokens;
-
-    await admin.database().ref("users").child(userUid).update({
-      tokens: updatedTokens,
-    });
-
-    console.log(`Tokens added to user ${email}. New token balance: ${updatedTokens}`);
-  } catch (error) {
-    console.error("Error giving tokens to user:", error);
   }
 };
 
@@ -71,62 +54,72 @@ router.post('/subscribe', async (req:Request, res:Response) => {
   try {
     const { plan, customerId } = req.body;
     let planId: string | null = null;
-    if(plan == 19) planId = planOne;
-    else if(plan == 79) planId = planTwo;
-    else if(plan == 149) planId = planThree;
-    else if(plan == 279) planId = planFour;
-    else if(plan == 599) planId = planFive;
+    if(plan == 19) {
+      planId = planOne;
+    }else if(plan == 79){
+      planId = planTwo;
+    } else if(plan == 149) {
+      planId = planThree;
+    }else if(plan == 279){
+      planId = planFour;
+    }else if(plan == 599){
+      planId = planFive;
+    }
 
     if (planId === null) {
       throw new Error('Invalid plan');
     }
-
     const session = await stripeSession(planId);
 
     const user = await admin.auth().getUser(customerId);
-
-    await admin.database().ref("users").child(user.uid).update({
-      subscription: {
-        sessionId: session.id
-      }
+    const db = admin.firestore();
+    const collectionName = 'users';
+    const firestoreRoute = `/${collectionName}/${user.uid}`;
+    
+    await db.doc(firestoreRoute).update({
+      'subscription.sessionId': session.id,
     });
-    console.log(session)
-    return res.json({session})
+    
+    console.log(session);
 
+    return res.json({ session });
   } catch (error) {
     console.error((error as Error).message);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.post("/payment-success", async (req: Request, res: Response) => {
+
+router.post("/success", async (req: Request, res: Response) => {
   const { sessionId, firebaseId } = req.body;
 
   try {
-    // Retrieve the session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status === 'paid') {
-      const subscriptionId = session.subscription;
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
-      // Calculate the tokens based on the subscription plan
-      const planId = subscription.plan.id;
-      const tokensToAdd = calculateTokensBasedOnPlan(parseInt(planId)); // Parse planId to an integer
-
-      // Retrieve the user
+      const tokensToAdd = calculateTokensBasedOnPlan(session.amount_total); 
       const user = await admin.auth().getUser(firebaseId);
+      const db = admin.firestore();
+      const collectionName = 'users';
+      const firestoreRoute = `/${collectionName}/${user.uid}`;
 
-      // Update the user's token balance
-      if (user.email) {
-        await giveTokensToUser(user.email, tokensToAdd);
-      }
+      await db.runTransaction(async (transaction) => {
+        const documentRef = db.doc(firestoreRoute);
+        const documentSnapshot = await transaction.get(documentRef);
 
-      // Update the user's subscription and token balance in the database
-      await admin.database().ref("users").child(user.uid).update({
-        tokens: tokensToAdd,
+        if (!documentSnapshot.exists) {
+          throw new Error("Document does not exist");
+        }
+
+        const currentTokens = documentSnapshot.get("tokens") || 0;
+        console.log(currentTokens)
+
+
+        const newTokens = currentTokens + tokensToAdd;
+        transaction.update(documentRef, { tokens: newTokens });
       });
 
+      console.log(`Tokens added successfully in document: ${firestoreRoute}`);
       return res.json({ message: "Payment successful" });
     } else {
       return res.json({ message: "Payment failed" });
