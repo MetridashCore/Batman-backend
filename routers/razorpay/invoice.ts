@@ -1,70 +1,70 @@
-import { Router } from "express";
-import { z } from "zod";
-import razorpay from "../../services/razorpay";
+import { Router } from 'express'
+import { z } from 'zod'
+import razorpay from '../../services/razorpay'
 
-const router = Router();
+const router = Router()
 
 const schema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  contact: z.string().min(1, { message: "Contact is required" }),
+  name: z.string().min(1, { message: 'Name is required' }),
+  contact: z.string().min(1, { message: 'Contact is required' }),
   email: z.string().email(),
   billing_address_line1: z
     .string()
-    .min(1, { message: "Billing address is required" }),
+    .min(1, { message: 'Billing address is required' }),
   billing_address_line2: z.string(),
   billing_address_zipcode: z
     .string()
-    .min(1, { message: "Zipcode is required" }),
-  billing_address_city: z.string().min(1, { message: "City is required" }),
-  billing_address_state: z.string().min(1, { message: "State is required" }),
+    .min(1, { message: 'Zipcode is required' }),
+  billing_address_city: z.string().min(1, { message: 'City is required' }),
+  billing_address_state: z.string().min(1, { message: 'State is required' }),
   billing_address_country: z
     .string()
-    .min(1, { message: "Country is required" }),
+    .min(1, { message: 'Country is required' }),
   shipping_address_line1: z
     .string()
-    .min(1, { message: "Shipping address is required" }),
+    .min(1, { message: 'Shipping address is required' }),
   shipping_address_line2: z.string(),
   shipping_address_zipcode: z
     .string()
-    .min(1, { message: "Zipcode is required" }),
-  shipping_address_city: z.string().min(1, { message: "State is required" }),
-  shipping_address_state: z.string().min(1, { message: "State is required" }),
+    .min(1, { message: 'Zipcode is required' }),
+  shipping_address_city: z.string().min(1, { message: 'State is required' }),
+  shipping_address_state: z.string().min(1, { message: 'State is required' }),
   shipping_address_country: z
     .string()
-    .min(1, { message: "Country is required" }),
-  line_items_name: z.string().min(1, { message: "Name is required" }),
+    .min(1, { message: 'Country is required' }),
+  line_items_name: z.string().min(1, { message: 'Name is required' }),
   line_items_description: z
     .string()
-    .min(1, { message: "Description is required" }),
+    .min(1, { message: 'Description is required' }),
   amount: z.number({
-    required_error: "Amount is required",
-    invalid_type_error: "Only Number is allowed",
+    required_error: 'Amount is required',
+    invalid_type_error: 'Only Number is allowed',
   }),
   quantity: z.number({
-    required_error: "Quantity is required",
-    invalid_type_error: "Only Number is allowed",
+    required_error: 'Quantity is required',
+    invalid_type_error: 'Only Number is allowed',
   }),
-});
+})
 
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const invoices = await razorpay.invoices.all();
-    return res.send(invoices);
+    const invoices = await razorpay.invoices.all()
+    return res.json({ invoices })
   } catch (error) {
-    return res.send(error);
+    return res.json({ error })
   }
-});
+})
 
-router.get("/:id", async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const invoice = await razorpay.invoices.fetch(req.params.id);
-    return res.send(invoice);
+    const invoice = await razorpay.invoices.fetch(req.params.id)
+    return res.json({ invoice })
   } catch (error) {
-    return res.send(error);
+    return res.json({ error })
   }
-});
+})
 
-router.post("/", async (req, res) => {
+router.post('/', async (req, res) => {
   const {
     name,
     contact,
@@ -85,11 +85,11 @@ router.post("/", async (req, res) => {
     amount,
     line_items_name,
     line_items_description,
-  } = schema.parse(req.body);
+  } = schema.parse(req.body)
   try {
     const invoice = await razorpay.invoices.create({
-      type: "invoice",
-      description: "an invoice",
+      type: 'invoice',
+      description: 'an invoice',
       partial_payment: false,
       customer: {
         name,
@@ -120,14 +120,14 @@ router.post("/", async (req, res) => {
           quantity,
         },
       ],
-    });
-    return res.send(invoice);
+    })
+    return res.json({ invoice })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.send(error.issues[0].message);
+      return res.json({ message: error.issues[0].message })
     }
-    return res.send(error);
+    return res.json({ error })
   }
-});
+})
 
-export default router;
+export default router
