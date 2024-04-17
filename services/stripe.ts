@@ -1,3 +1,5 @@
-const stripe = require("stripe")(process.env.STRIPE_SECRET);
+import stripe from "stripe"
 
-export default stripe;
+const stripePackage = stripe(process.env.STRIPE_SECRET)
+
+export default stripePackage
