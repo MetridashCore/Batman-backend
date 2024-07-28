@@ -1,8 +1,5 @@
-import { Router } from 'express'
 import { z } from 'zod'
-import razorpay from '../../services/razorpay'
-
-const router = Router()
+import { router, razorpay } from '../../startup'
 
 const schema = z.object({
   amount: z

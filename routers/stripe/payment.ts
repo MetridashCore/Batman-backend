@@ -1,7 +1,4 @@
-import { Router } from 'express'
-import stripe from '../../services/stripe'
-
-const router = Router()
+import { router, stripe } from '../../startup'
 
 // checkout api
 router.post('/', async (req, res) => {

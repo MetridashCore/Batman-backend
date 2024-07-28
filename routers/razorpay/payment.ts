@@ -1,7 +1,4 @@
-import { Router } from 'express'
-import razorpay from '../../services/razorpay'
-
-const router = Router()
+import { router, razorpay } from '../../startup'
 
 router.get('/', async (req, res) => {
   try {

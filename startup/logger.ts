@@ -1,7 +1,7 @@
-import type { Express } from "express";
-import * as Sentry from "@sentry/node";
+import type { Express } from 'express'
+import * as Sentry from '@sentry/node'
 
-export default function (app: Express) {
+export function logger(app: Express) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     integrations: [
@@ -13,5 +13,5 @@ export default function (app: Express) {
       }),
     ],
     tracesSampleRate: 1.0,
-  });
+  })
 }
