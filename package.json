@@ -1,7 +1,7 @@
 {
   "name": "batman-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "A simple and easy-to-use payment gateway integration for Razorpay.",
   "exports": {
     ".": "./src/index.ts"
   },
