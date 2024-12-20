@@ -10,9 +10,9 @@ const schema = z.object({
 router.get('/:customerId', async (req, res) => {
   try {
     const allFund = await razorpay.fundAccount.fetch(req.params.customerId)
-    return res.json({ allFund })
+    res.json({ allFund })
   } catch (error) {
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
@@ -28,12 +28,13 @@ router.post('/:customerId', async (req, res) => {
         ifsc,
       },
     })
-    return res.json({ fund })
+    res.json({ fund })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.json({ message: error.issues[0].message })
+      res.json({ message: error.issues[0].message })
+      return
     }
-    return res.json({ error })
+    res.json({ error })
   }
 })
 

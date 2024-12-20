@@ -16,9 +16,9 @@ const schema = z.object({
 router.get('/', async (req, res) => {
   try {
     const orders = await razorpay.orders.all()
-    return res.json({ orders })
+    res.json({ orders })
   } catch (error) {
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
@@ -30,12 +30,13 @@ router.post('/', async (req, res) => {
       currency: 'INR',
       partial_payment: false,
     })
-    return res.json({ order })
+    res.json({ order })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.json({ message: error.issues[0].message })
+      res.json({ message: error.issues[0].message })
+      return
     }
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
@@ -52,21 +53,22 @@ router.post('/banking/upi', async (req, res) => {
         ifsc,
       },
     })
-    return res.json({ order })
+    res.json({ order })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.json({ message: error.issues[0].message })
+      res.json({ message: error.issues[0].message })
+      return
     }
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
 router.get('/:id', async (req, res) => {
   try {
     const order = await razorpay.orders.fetch(req.params.id)
-    return res.json({ order })
+    res.json({ order })
   } catch (error) {
-    return res.json({ error })
+    res.json({ error })
   }
 })
 

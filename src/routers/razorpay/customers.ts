@@ -29,21 +29,22 @@ router.post('/', async (req, res) => {
       contact,
       email,
     })
-    return res.json({ customer })
+    res.json({ customer })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.json({ message: error.issues[0].message })
+      res.json({ message: error.issues[0].message })
+      return
     }
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
 router.get('/:customerId', async (req, res) => {
   try {
     const customer = await razorpay.customers.fetch(req.params.customerId)
-    return res.json({ customer })
+    res.json({ customer })
   } catch (error) {
-    return res.json({ error })
+    res.json({ error })
   }
 })
 

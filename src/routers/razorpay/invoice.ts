@@ -46,18 +46,18 @@ const schema = z.object({
 router.get('/', async (req, res) => {
   try {
     const invoices = await razorpay.invoices.all()
-    return res.json({ invoices })
+    res.json({ invoices })
   } catch (error) {
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
 router.get('/:id', async (req, res) => {
   try {
     const invoice = await razorpay.invoices.fetch(req.params.id)
-    return res.json({ invoice })
+    res.json({ invoice })
   } catch (error) {
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
@@ -118,12 +118,13 @@ router.post('/', async (req, res) => {
         },
       ],
     })
-    return res.json({ invoice })
+    res.json({ invoice })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.json({ message: error.issues[0].message })
+      res.json({ message: error.issues[0].message })
+      return
     }
-    return res.json({ error })
+    res.json({ error })
   }
 })
 

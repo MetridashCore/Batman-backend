@@ -33,9 +33,9 @@ const schema = z.object({
 router.get('/:id', async (req, res) => {
   try {
     const account = await razorpay.accounts.fetch(req.params.id)
-    return res.json({ account })
+    res.json({ account })
   } catch (error) {
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
@@ -89,12 +89,13 @@ router.post('/', async (req, res) => {
         gst,
       },
     })
-    return res.json({ account })
+    res.json({ account })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.json({ message: error.issues[0].message })
+      res.json({ message: error.issues[0].message })
+      return
     }
-    return res.json({ error })
+    res.json({ error })
   }
 })
 

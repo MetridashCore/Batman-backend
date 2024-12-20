@@ -15,18 +15,18 @@ const schema = z.object({
 router.get('/', async (req, res) => {
   try {
     const items = await razorpay.items.all()
-    return res.json({ items })
+    res.json({ items })
   } catch (error) {
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
 router.get('/:id', async (req, res) => {
   try {
     const item = await razorpay.items.fetch(req.params.id)
-    return res.json({ item })
+    res.json({ item })
   } catch (error) {
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
@@ -39,12 +39,13 @@ router.post('/', async (req, res) => {
       amount: amount * 100,
       currency: 'INR',
     })
-    return res.json({ item })
+    res.json({ item })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.json({ message: error.issues[0].message })
+      res.json({ message: error.issues[0].message })
+      return
     }
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
@@ -56,21 +57,22 @@ router.put('/:id', async (req, res) => {
       description,
       amount,
     })
-    return res.json({ item })
+    res.json({ item })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.json({ message: error.issues[0].message })
+      res.json({ message: error.issues[0].message })
+      return
     }
-    return res.json({ error })
+    res.json({ error })
   }
 })
 
 router.delete('/:id', async (req, res) => {
   try {
     await razorpay.items.delete(req.params.id)
-    return res.json({ message: true })
+    res.json({ message: true })
   } catch (error) {
-    return res.json({ error })
+    res.json({ error })
   }
 })
 

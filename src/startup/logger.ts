@@ -3,15 +3,7 @@ import * as Sentry from '@sentry/node'
 
 export function logger(app: Express) {
   Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    integrations: [
-      new Sentry.Integrations.Http({
-        tracing: true,
-      }),
-      new Sentry.Integrations.Express({
-        app,
-      }),
-    ],
+    dsn: process.env.SENTRY_DSN!,
     tracesSampleRate: 1.0,
   })
 }
