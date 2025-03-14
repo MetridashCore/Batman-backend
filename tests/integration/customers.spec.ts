@@ -1,4 +1,4 @@
-import razorpay from '../../src/services/razorpay'
+import { razorpay } from '../../src/services/razorpay'
 
 describe('/api/razorpay/customers', () => {
   describe('GET /', () => {
