@@ -6,6 +6,7 @@ declare global {
       SENTRY_DSN?: string
       STRIPE_SECRET?: string
       BASE_URL?: string
+      OAUTH_TOKEN?: string
     }
   }
 }
