@@ -1,7 +1,11 @@
 import 'dotenv/config'
 import express from 'express'
 import 'express-async-errors'
-import { config, logger, prod, routes, asyncErrors } from './startup'
+import { config } from "./startup/config"
+import { logger } from "./startup/logger"
+import { prod } from "./startup/prod"
+import { routes } from './startup/routes'
+import { asyncErrors } from "./startup/asyncErrors"
 
 export const app = express()
 
