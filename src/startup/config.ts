@@ -4,6 +4,6 @@ export function config() {
     !process.env.RAZORPAY_KEY_SECRET ||
     !process.env.STRIPE_SECRET
   ) {
-    throw new Error('FATAL ERROR!')
+    process.exit(1)
   }
 }
