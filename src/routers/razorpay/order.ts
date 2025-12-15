@@ -1,12 +1,12 @@
+import express from 'express'
 import { z } from 'zod'
-import { router, razorpay } from '../../startup'
+import { razorpay } from '../../services/razorpay'
+
+const router = express.Router()
 
 const schema = z.object({
   amount: z
-    .number({
-      invalid_type_error: 'Only Number is allowed',
-      required_error: 'The amount must be at least INR 1.00',
-    })
+    .number()
     .min(1, { message: 'Amount must be less than or equal to 1.00 INR' }),
   account_number: z.string().min(1, { message: 'Account Number is required' }),
   name: z.string().min(1, { message: 'Name is required' }),

@@ -1,14 +1,13 @@
+import express from 'express'
 import { z } from 'zod'
-import { router, razorpay } from '../../startup'
+import { razorpay } from '../../services/razorpay'
+
+const router = express.Router()
 
 const schema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
-  email: z.string().email({ message: 'Email is required' }),
-  contact: z.number({
-    required_error:
-      'Contact number should be at least 8 digits, including country code',
-    invalid_type_error: 'Only Number is allowed',
-  }),
+  email: z.email({ message: 'Email is required' }),
+  contact: z.number().min(1, { message:'Number is required' }),
 })
 
 router.get('/', async (req, res) => {

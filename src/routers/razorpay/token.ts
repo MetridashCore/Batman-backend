@@ -1,4 +1,7 @@
-import { router, razorpay } from '../../startup'
+import express from 'express'
+import { razorpay } from '../../services/razorpay'
+
+const router = express.Router()
 
 router.get('/:paymentId', async (req, res) => {
   try {

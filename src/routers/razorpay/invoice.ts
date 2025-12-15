@@ -1,5 +1,8 @@
+import express from "express"
 import { z } from 'zod'
-import { router, razorpay } from '../../startup'
+import { razorpay } from '../../services/razorpay'
+
+const router = express.Router()
 
 const schema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
@@ -33,14 +36,8 @@ const schema = z.object({
   line_items_description: z
     .string()
     .min(1, { message: 'Description is required' }),
-  amount: z.number({
-    required_error: 'Amount is required',
-    invalid_type_error: 'Only Number is allowed',
-  }),
-  quantity: z.number({
-    required_error: 'Quantity is required',
-    invalid_type_error: 'Only Number is allowed',
-  }),
+  amount: z.number().min(1, { message: 'Amount is required' }),
+  quantity: z.number().min(1, { message: 'Quantity is required'}),
 })
 
 router.get('/', async (req, res) => {

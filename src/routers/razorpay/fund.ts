@@ -1,5 +1,8 @@
+import express from "express"
 import { z } from 'zod'
-import { router, razorpay } from '../../startup'
+import { razorpay } from '../../services/razorpay'
+
+const router = express.Router()
 
 const schema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
