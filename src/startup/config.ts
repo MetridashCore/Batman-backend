@@ -1,3 +1,5 @@
+import process from "node:process"
+
 export function config() {
   if (
     !process.env.RAZORPAY_KEY_ID ||
