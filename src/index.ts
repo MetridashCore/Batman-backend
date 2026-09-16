@@ -1,12 +1,11 @@
 import process from 'node:process'
 import 'dotenv/config'
 import express from 'express'
-import 'express-async-errors'
-import { config } from "./startup/config"
-import { logger } from "./startup/logger"
-import { prod } from "./startup/prod"
-import { routes } from './startup/routes'
-import { asyncErrors } from "./startup/asyncErrors"
+import { config } from "./startup/config.ts"
+import { logger } from "./startup/logger.ts"
+import { prod } from "./startup/prod.ts"
+import { routes } from './startup/routes.ts'
+import { asyncErrors } from "./startup/asyncErrors.ts"
 
 export const app = express()
 

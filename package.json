@@ -8,8 +8,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "dev": "nodemon src/index.ts",
-    "build": "npm ci && tsc",
+    "dev": "node --watch src/index.ts",
+    "build": "pnpm ci && tsc",
     "start": "node dist/index.js",
     "test": "vitest"
   },
@@ -26,9 +26,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^22.20.3",
-    "nodemon": "^3.1.14",
     "ts-jest": "^29.4.12",
-    "ts-node": "^10.9.2",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"
   },
@@ -38,7 +36,6 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "express-async-errors": "^3.1.1",
     "helmet": "^8.3.0",
     "razorpay": "^2.9.8",
     "stripe": "^22.6.2",

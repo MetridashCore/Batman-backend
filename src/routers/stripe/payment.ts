@@ -1,6 +1,6 @@
 import process from 'node:process'
 import express from 'express'
-import { stripe } from '../../services/stripe'
+import { stripe } from '../../services/stripe.ts'
 
 const router = express.Router()
 

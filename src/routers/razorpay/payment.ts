@@ -1,5 +1,5 @@
 import express from 'express'
-import { razorpay } from '../../services/razorpay'
+import { razorpay } from '../../services/razorpay.ts'
 
 const router = express.Router()
 
