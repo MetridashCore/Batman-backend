@@ -3,7 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - "./app-storage:/data"
+    # Supply credentials via a local .env (copy .env.example).
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 8000
     ports:
-      - 8000:8000
+      - "8000:8000"
+    restart: unless-stopped

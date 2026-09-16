@@ -1,9 +1,0 @@
-import type { Express } from 'express'
-import * as Sentry from '@sentry/node'
-
-export function logger(app: Express) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN!,
-    tracesSampleRate: 1.0,
-  })
-}

@@ -1,20 +1,25 @@
 import process from 'node:process'
-import 'dotenv/config'
-import express from 'express'
-import { config } from "./startup/config.ts"
-import { logger } from "./startup/logger.ts"
-import { prod } from "./startup/prod.ts"
-import { routes } from './startup/routes.ts'
-import { asyncErrors } from "./startup/asyncErrors.ts"
+import { env } from './config/env.ts'
+import { initErrorReporting } from './middleware/observability.ts'
+import { createApp } from './app.ts'
 
-export const app = express()
+// Before the app is built, so instrumentation is in place as modules load.
+initErrorReporting()
 
-config()
-logger(app)
-prod(app)
-routes(app)
-asyncErrors(app)
+const app = createApp()
 
-const port = process.env.PORT || 8000
+const server = app.listen(env.PORT, () => {
+  console.log(`Server listening on port ${env.PORT} [${env.NODE_ENV}]`)
+})
 
-app.listen(port, () => console.log(`Server started on port ${port}`))
+/**
+ * Containers stop with SIGTERM. Without this the process is killed mid-request
+ * and in-flight payments get no response.
+ */
+function shutdown(signal: string): void {
+  console.log(`${signal} received, shutting down.`)
+  server.close(() => process.exit(0))
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT', () => shutdown('SIGINT'))
