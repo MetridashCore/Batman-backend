@@ -6,6 +6,40 @@ import { ApiError } from '../http/api-error.ts'
 import { isProduction } from '../config/env.ts'
 
 /**
+ * Client-facing messages for the body-parser failures a caller can trigger.
+ * The parser's own message is deliberately not used: for malformed JSON it is
+ * the raw `JSON.parse` error, which describes our internals, not the request.
+ */
+const PARSER_MESSAGES: Record<string, string> = {
+  'entity.parse.failed': 'Request body could not be parsed',
+  'entity.too.large': 'Request body is too large',
+}
+
+/**
+ * Express' body parsers fail with `http-errors` instances: a `type` such as
+ * `entity.parse.failed`, the HTTP `status`, and `expose`, which is true only
+ * for 4xx. Provider SDK errors never set `expose`, which keeps the two apart.
+ */
+function requestParseError(
+  error: unknown
+): { status: number; message: string } | undefined {
+  if (typeof error !== 'object' || error === null) return undefined
+
+  const { type, status, expose } = error as {
+    type?: unknown
+    status?: unknown
+    expose?: unknown
+  }
+  if (typeof type !== 'string' || typeof status !== 'number' || expose !== true)
+    return undefined
+
+  return {
+    status,
+    message: PARSER_MESSAGES[type] ?? STATUS_CODES[status] ?? 'Bad Request',
+  }
+}
+
+/**
  * Shape of a normalised provider SDK error. Both the Razorpay and Stripe
  * clients attach the upstream HTTP status as `statusCode`.
  */
@@ -70,6 +104,15 @@ export function errorHandler(
   if (err instanceof ApiError) {
     res.status(err.status).json({
       error: { message: err.message, details: err.details },
+    })
+    return
+  }
+
+  // Checked before provider errors: parser errors also carry `statusCode`.
+  const parseError = requestParseError(err)
+  if (parseError) {
+    res.status(parseError.status).json({
+      error: { message: parseError.message },
     })
     return
   }

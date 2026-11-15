@@ -42,6 +42,7 @@ offenders — see [`src/config/env.ts`](src/config/env.ts) for the full schema.
 | `pnpm start` | Run the built output |
 | `pnpm typecheck` | Type-check sources *and* tests, no emit |
 | `pnpm test` | Run the test suite |
+| `pnpm test:unit` / `pnpm test:integration` | Run one test project |
 
 ## Layout
 
@@ -149,7 +150,50 @@ pnpm test
 ```
 
 The default suite stubs both provider clients, so it needs no credentials and
-makes no network calls. It covers routing, validation, and error mapping.
+makes no network calls. It runs as three Vitest projects, each runnable alone:
+
+```bash
+pnpm test:unit          # tests/unit
+pnpm test:integration   # tests/integration
+```
+
+```
+tests/
+  unit/          Pure modules in isolation: money, schema builders, ApiError,
+                 the error handler, env loading, observability, provider setup
+  integration/   The real Express app over HTTP, one spec per router. Asserts
+                 both the response and the exact payload sent to the provider
+    setup.ts     Swaps both provider clients for the fakes, for this project only
+    production.spec.ts  Same app with NODE_ENV=production (no error detail)
+  live/          Opt-in calls to the real Razorpay API (see below)
+  helpers/
+    server.ts          Boots the app on an ephemeral port (`useTestServer`)
+    fake-providers.ts  In-memory Razorpay/Stripe clients with echoing defaults
+```
+
+To test a new route, add a spec under `tests/integration/`. The providers are
+already faked there; override a method per test to stub a response. Calls and
+stubs are reset automatically between tests (`mockReset` in `vitest.config.ts`):
+
+```ts
+import { describe, expect, it } from 'vitest'
+import { createApp } from '../../../src/app.ts'
+import { razorpay, razorpayRejection } from '../../helpers/fake-providers.ts'
+import { useTestServer } from '../../helpers/server.ts'
+
+const api = useTestServer(createApp)
+
+describe('GET /api/razorpay/orders/:orderId', () => {
+  it('forwards an upstream 404', async () => {
+    razorpay.orders.fetch.mockRejectedValueOnce(razorpayRejection(404))
+
+    const res = await api.get('/api/razorpay/orders/order_x')
+
+    expect(res.status).toBe(404)
+    expect(razorpay.orders.fetch).toHaveBeenCalledWith('order_x')
+  })
+})
+```
 
 `tests/live/` talks to the real Razorpay API and is skipped unless you opt in:
 

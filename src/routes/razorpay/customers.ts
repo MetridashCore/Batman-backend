@@ -8,8 +8,10 @@ const router = Router()
 const createCustomerSchema = z.object({
   name: requiredString('Name'),
   email: email(),
-  // Razorpay accepts a contact number as either a string or a number.
-  contact: z.union([z.string().min(1), z.number()], {
+  // Razorpay accepts a contact number as either a string or a number. The
+  // string branch carries its own message: for a blank string zod reports that
+  // branch's `.min(1)` issue, not the union-level `error`.
+  contact: z.union([requiredString('Contact'), z.number()], {
     error: 'Contact is required',
   }),
 })
